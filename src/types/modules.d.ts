@@ -1,0 +1,13 @@
+declare module 'react';
+declare module 'react-native';
+declare module 'react-native-paper';
+declare module '@react-navigation/native';
+declare module '@react-navigation/stack';
+declare module '@react-navigation/bottom-tabs';
+declare module '@expo/vector-icons';
+declare module '@react-native-async-storage/async-storage';
+declare module 'firebase';
+declare module 'firebase/app';
+declare module 'firebase/auth';
+declare module 'firebase/firestore';
+declare module 'firebase/storage'; 

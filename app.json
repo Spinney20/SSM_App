@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "SSM App",
+    "slug": "ssm-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./src/assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0056b3"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.viarom.ssmapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/images/adaptive-icon.png",
+        "backgroundColor": "#0056b3"
+      },
+      "package": "com.viarom.ssmapp"
+    },
+    "web": {
+      "favicon": "./src/assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Aplicația necesită acces la galeria foto pentru a încărca imagini de incidente și documente."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ssm-app-project"
+      }
+    }
+  }
+} 
