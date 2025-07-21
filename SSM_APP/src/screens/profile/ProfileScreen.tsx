@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, Avatar, Button, Card, List, Divider, Dialog, Portal, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useAuth } from '../../contexts/AuthContext';
 import { theme } from '../../config/theme';
 import { updateUserProfile } from '../../services/authService';
 import { Logo } from '../../components/common';
+import { ROUTES, USER_ROLES } from '../../config/constants';
 
 const ProfileScreen: React.FC = () => {
+  const navigation = useNavigation<StackNavigationProp<any>>();
   const { authState, logout, updateProfile } = useAuth();
   const { user } = authState;
 
@@ -17,6 +21,9 @@ const ProfileScreen: React.FC = () => {
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
+
+  // Verificare dacă utilizatorul este administrator
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
 
   // Obținere inițiale nume
   const getInitials = () => {
@@ -175,6 +182,22 @@ const ProfileScreen: React.FC = () => {
           />
         </Card.Content>
       </Card>
+
+      {/* Card administrare - vizibil doar pentru administratori */}
+      {isAdmin && (
+        <Card style={styles.card}>
+          <Card.Title title="Administrare" />
+          <Card.Content>
+            <List.Item
+              title="Gestionare utilizatori"
+              description="Adăugare, editare și ștergere utilizatori"
+              left={props => <List.Icon {...props} icon="account-group" />}
+              right={props => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() => navigation.navigate(ROUTES.ADMIN_USERS)}
+            />
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Setări aplicație */}
       <Card style={styles.card}>

@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../contexts/AuthContext';
-import { ROUTES } from '../config/constants';
+import { ROUTES, USER_ROLES } from '../config/constants';
 
 // Importăm ecranele pentru autentificare (vom crea aceste fișiere mai târziu)
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -21,6 +21,11 @@ import AttendanceScreen from '../screens/attendance/AttendanceScreen';
 import NotificationsScreen from '../screens/notifications/NotificationsScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 
+// Importăm ecranele de administrare
+import AdminUsersScreen from '../screens/admin/AdminUsersScreen';
+import CreateUserScreen from '../screens/admin/CreateUserScreen';
+import EditUserScreen from '../screens/admin/EditUserScreen';
+
 // Importăm iconițe pentru tab-uri
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 
@@ -35,6 +40,9 @@ type MainStackParamList = {
   MainTabs: undefined;
   [ROUTES.REPORT_INCIDENT]: undefined;
   [ROUTES.INCIDENT_DETAILS]: { incidentId: string };
+  [ROUTES.ADMIN_USERS]: undefined;
+  [ROUTES.CREATE_USER]: undefined;
+  [ROUTES.EDIT_USER]: { userId: string };
 };
 
 type MainTabsParamList = {
@@ -52,6 +60,10 @@ const MainTabs = createBottomTabNavigator<MainTabsParamList>();
 
 // Componenta pentru tab-urile principale
 const MainTabsNavigator = () => {
+  const { authState } = useAuth();
+  const { user } = authState;
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
+
   return (
     <MainTabs.Navigator
       screenOptions={{
@@ -123,6 +135,10 @@ const MainTabsNavigator = () => {
 
 // Componenta pentru stiva principală (după autentificare)
 const MainStackNavigator = () => {
+  const { authState } = useAuth();
+  const { user } = authState;
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
+
   return (
     <MainStack.Navigator screenOptions={{ headerShown: false }}>
       <MainStack.Screen name="MainTabs" component={MainTabsNavigator} />
@@ -136,6 +152,25 @@ const MainStackNavigator = () => {
         component={IncidentDetailsScreen}
         options={{ headerShown: true, title: 'Detalii incident' }}
       />
+      {isAdmin && (
+        <>
+          <MainStack.Screen
+            name={ROUTES.ADMIN_USERS}
+            component={AdminUsersScreen}
+            options={{ headerShown: true, title: 'Administrare utilizatori' }}
+          />
+          <MainStack.Screen
+            name={ROUTES.CREATE_USER}
+            component={CreateUserScreen}
+            options={{ headerShown: true, title: 'Creare utilizator nou' }}
+          />
+          <MainStack.Screen
+            name={ROUTES.EDIT_USER}
+            component={EditUserScreen}
+            options={{ headerShown: true, title: 'Editare utilizator' }}
+          />
+        </>
+      )}
     </MainStack.Navigator>
   );
 };

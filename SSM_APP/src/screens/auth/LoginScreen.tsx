@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { TextInput, Button, Text, Surface } from 'react-native-paper';
+import { TextInput, Button, Text, Surface, Divider } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { ROUTES } from '../../config/constants';
 import { theme } from '../../config/theme';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Logo } from '../../components/common';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Tipul pentru props
 type LoginScreenProps = {
@@ -18,9 +19,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [microsoftLoading, setMicrosoftLoading] = useState(false);
 
   // Context autentificare
-  const { login } = useAuth();
+  const { login, loginWithMicrosoft } = useAuth();
 
   // Handler pentru autentificare
   const handleLogin = async () => {
@@ -41,6 +43,22 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handler pentru autentificare cu Microsoft
+  const handleMicrosoftLogin = async () => {
+    try {
+      setMicrosoftLoading(true);
+      await loginWithMicrosoft();
+      // Navigare se face automat prin AppNavigator
+    } catch (error: any) {
+      Alert.alert(
+        'Eroare de autentificare',
+        error.message || 'Nu s-a putut realiza autentificarea cu Microsoft. Încearcă din nou.'
+      );
+    } finally {
+      setMicrosoftLoading(false);
     }
   };
 
@@ -90,7 +108,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             onPress={handleLogin}
             style={styles.button}
             loading={loading}
-            disabled={loading}
+            disabled={loading || microsoftLoading}
           >
             Autentificare
           </Button>
@@ -101,6 +119,21 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           >
             <Text style={styles.forgotPasswordText}>Ai uitat parola?</Text>
           </TouchableOpacity>
+
+          <Divider style={styles.divider} />
+          
+          <Text style={styles.orText}>sau</Text>
+
+          <Button
+            mode="outlined"
+            onPress={handleMicrosoftLogin}
+            style={styles.microsoftButton}
+            icon={() => <MaterialCommunityIcons name="microsoft" size={20} color="#0078D4" />}
+            loading={microsoftLoading}
+            disabled={loading || microsoftLoading}
+          >
+            Conectare cu Microsoft
+          </Button>
         </Surface>
 
         {/* Link către înregistrare */}
@@ -164,6 +197,17 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     color: theme.colors.primary,
+  },
+  divider: {
+    marginVertical: 20,
+  },
+  orText: {
+    textAlign: 'center',
+    marginBottom: 15,
+    color: theme.colors.placeholder,
+  },
+  microsoftButton: {
+    borderColor: '#0078D4',
   },
   registerContainer: {
     flexDirection: 'row',

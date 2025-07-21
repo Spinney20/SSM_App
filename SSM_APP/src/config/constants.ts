@@ -62,6 +62,9 @@ export const ROUTES = {
   ATTENDANCE: 'Attendance',
   NOTIFICATIONS: 'Notifications',
   SETTINGS: 'Settings',
+  ADMIN_USERS: 'AdminUsers',
+  CREATE_USER: 'CreateUser',
+  EDIT_USER: 'EditUser',
 };
 
 // Constante pentru storage
