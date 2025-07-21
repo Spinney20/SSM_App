@@ -77,7 +77,28 @@ export const signIn = async (email: string, password: string): Promise<User> => 
         ...userData,
       } as User;
     } else {
-      throw new Error('User data not found');
+      // Dacă utilizatorul nu există în Firestore, creăm un document nou
+      const nameParts = firebaseUser.displayName?.split(' ') || ['', ''];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const userData = {
+        email: firebaseUser.email || email,
+        firstName,
+        lastName,
+        role: USER_ROLES.WORKER, // rol implicit pentru utilizatori noi
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+      
+      await setDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid), userData);
+      
+      return {
+        id: firebaseUser.uid,
+        ...userData,
+        createdAt: new Date().getTime(),
+        updatedAt: new Date().getTime(),
+      } as User;
     }
   } catch (error) {
     console.error('Error signing in:', error);
@@ -391,4 +412,10 @@ export const deleteUserByAdmin = async (userId: string): Promise<void> => {
     console.error('Error deleting user by admin:', error);
     throw error;
   }
-}; 
+};
+
+// Alias pentru signIn pentru compatibilitate
+export const loginUser = signIn;
+
+// Alias pentru signOut pentru compatibilitate
+export const logoutUser = signOut; 

@@ -9,24 +9,25 @@ interface AuthContextType {
   authState: AuthState;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName: string, lastName: string, role?: 'worker' | 'team_leader' | 'ssm_responsible' | 'admin', employeeCode?: string) => Promise<void>;
+  loginWithMicrosoft: () => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (data: Partial<Omit<User, 'id' | 'email' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
 }
 
-// Creare context
+// Context pentru autentificare
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Hook pentru utilizarea contextului
-export const useAuth = (): AuthContextType => {
+// Hook personalizat pentru a folosi contextul de autentificare
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth trebuie utilizat în interiorul unui AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
-// Props pentru provider
+// Props pentru AuthProvider
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -77,7 +78,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<void> => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      const user = await authService.signIn(email, password);
+      const user = await authService.loginUser(email, password);
       setAuthState({
         user,
         loading: false,
@@ -93,11 +94,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Funcție pentru autentificare cu Microsoft
+  const loginWithMicrosoft = async (): Promise<void> => {
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      const user = await authService.signInWithMicrosoft();
+      setAuthState({
+        user,
+        loading: false,
+        error: null,
+      });
+    } catch (error: any) {
+      setAuthState(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message || 'Eroare la autentificarea cu Microsoft',
+      }));
+      throw error;
+    }
+  };
+
   // Funcție pentru înregistrare
   const register = async (
-    email: string,
-    password: string,
-    firstName: string,
+    email: string, 
+    password: string, 
+    firstName: string, 
     lastName: string,
     role: 'worker' | 'team_leader' | 'ssm_responsible' | 'admin' = 'worker',
     employeeCode?: string
@@ -122,8 +143,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Funcție pentru deconectare
   const logout = async (): Promise<void> => {
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      await authService.signOut();
+      await authService.logoutUser();
       setAuthState({
         user: null,
         loading: false,
@@ -132,6 +154,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: any) {
       setAuthState(prev => ({
         ...prev,
+        loading: false,
         error: error.message || 'Eroare la deconectare',
       }));
       throw error;
@@ -140,37 +163,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Funcție pentru resetarea parolei
   const resetPassword = async (email: string): Promise<void> => {
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
       await authService.resetPassword(email);
+      setAuthState(prev => ({
+        ...prev,
+        loading: false,
+        error: null,
+      }));
     } catch (error: any) {
+      setAuthState(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message || 'Eroare la resetarea parolei',
+      }));
       throw error;
     }
   };
 
   // Funcție pentru actualizarea profilului
-  const updateProfile = async (
-    data: Partial<Omit<User, 'id' | 'email' | 'createdAt' | 'updatedAt'>>
-  ): Promise<void> => {
-    if (!authState.user) {
-      throw new Error('Utilizatorul nu este autentificat');
-    }
-
+  const updateProfile = async (data: Partial<Omit<User, 'id' | 'email' | 'createdAt' | 'updatedAt'>>): Promise<void> => {
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      await authService.updateUserProfile(authState.user.id, data);
-      // Actualizăm starea locală
+      if (!authState.user) {
+        throw new Error('Utilizatorul nu este autentificat');
+      }
+      
+      const updatedUser = await authService.updateUserProfile(authState.user.id, data);
+      
+      setAuthState({
+        user: updatedUser,
+        loading: false,
+        error: null,
+      });
+    } catch (error: any) {
       setAuthState(prev => ({
         ...prev,
-        user: prev.user ? { ...prev.user, ...data } : null,
+        loading: false,
+        error: error.message || 'Eroare la actualizarea profilului',
       }));
-    } catch (error: any) {
       throw error;
     }
   };
 
   // Valoarea contextului
-  const value: AuthContextType = {
+  const value = {
     authState,
     login,
+    loginWithMicrosoft,
     register,
     logout,
     resetPassword,

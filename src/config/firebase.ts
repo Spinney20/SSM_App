@@ -1,17 +1,19 @@
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
-import 'firebase/storage';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
+import 'firebase/compat/analytics';
+import { Platform } from 'react-native';
 
 // Configurația Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  authDomain: "ssm-app.firebaseapp.com",
-  projectId: "ssm-app",
-  storageBucket: "ssm-app.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890abcdef",
-  measurementId: "G-XXXXXXXXXX"
+  apiKey: "AIzaSyC2eQGFlQ1Z4gdi8u8ibetJfKntvhoW_FA",
+  authDomain: "ssmapp-52687.firebaseapp.com",
+  projectId: "ssmapp-52687",
+  storageBucket: "ssmapp-52687.appspot.com",
+  messagingSenderId: "125482949228",
+  appId: "1:125482949228:web:ffe622fe6985f7dbd5d649",
+  measurementId: "G-HWML60MP12"
 };
 
 // Inițializează Firebase dacă nu este deja inițializat
@@ -38,4 +40,11 @@ firestore.enablePersistence({ synchronizeTabs: true })
     }
   });
 
+// Inițializează Analytics doar pentru web
+let analytics = null;
+if (Platform.OS === 'web') {
+  analytics = firebase.analytics();
+}
+
+export { analytics };
 export default firebase; 

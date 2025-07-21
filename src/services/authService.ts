@@ -69,11 +69,22 @@ export const loginUser = async (email: string, password: string): Promise<User> 
     // Obține datele utilizatorului din Firestore
     const userDoc = await usersCollection.doc(user.uid).get();
     
+    let userData: Omit<User, 'id'>;
+    
+    // Dacă documentul utilizatorului nu există în Firestore, îl creăm
     if (!userDoc.exists) {
-      throw new Error('Datele utilizatorului nu au fost găsite');
+      userData = {
+        email: user.email || email,
+        displayName: user.displayName || email.split('@')[0],
+        role: 'employee', // rol implicit
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Creăm documentul utilizatorului în Firestore
+      await usersCollection.doc(user.uid).set(userData);
+    } else {
+      userData = userDoc.data() as Omit<User, 'id'>;
     }
-
-    const userData = userDoc.data() as Omit<User, 'id'>;
 
     // Salvează token-ul în AsyncStorage pentru persistență
     const token = await user.getIdToken();
@@ -153,7 +164,7 @@ export const updateUserProfile = async (
  */
 export const getCurrentUser = async (): Promise<User | null> => {
   return new Promise((resolve, reject) => {
-    const unsubscribe = firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+    const unsubscribe = firebase.auth().onAuthStateChanged(async (firebaseUser: any) => {
       unsubscribe();
       
       if (!firebaseUser) {
@@ -164,17 +175,29 @@ export const getCurrentUser = async (): Promise<User | null> => {
       try {
         const userDoc = await usersCollection.doc(firebaseUser.uid).get();
         
+        // Dacă documentul utilizatorului nu există în Firestore, îl creăm
         if (!userDoc.exists) {
-          resolve(null);
-          return;
+          const userData: Omit<User, 'id'> = {
+            email: firebaseUser.email || '',
+            displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || '',
+            role: 'employee', // rol implicit
+            createdAt: new Date().toISOString(),
+          };
+          
+          await usersCollection.doc(firebaseUser.uid).set(userData);
+          
+          resolve({
+            id: firebaseUser.uid,
+            ...userData,
+          });
+        } else {
+          const userData = userDoc.data() as Omit<User, 'id'>;
+          
+          resolve({
+            id: firebaseUser.uid,
+            ...userData,
+          });
         }
-        
-        const userData = userDoc.data() as Omit<User, 'id'>;
-        
-        resolve({
-          id: firebaseUser.uid,
-          ...userData,
-        });
       } catch (error) {
         console.error('Error getting current user:', error);
         reject(error);
