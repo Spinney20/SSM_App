@@ -2,7 +2,7 @@
 
 ## Descriere
 
-SSM App este o aplicație mobilă dezvoltată pentru managementul Sănătății și Securității în Muncă (SSM). Aplicația permite gestionarea incidentelor, evaluărilor de risc, instruirilor și prezenței angajaților, oferind o soluție completă pentru departamentele SSM.
+SSM App este o aplicație mobilă dezvoltată pentru managementul Sănătății și Securității în Muncă (SSM). Aplicația permite gestionarea incidentelor, evaluărilor de risc, instruirilor și prezenței angajaților, oferind o soluție completă pentru departamentele SSM
 
 ## Tehnologii
 
